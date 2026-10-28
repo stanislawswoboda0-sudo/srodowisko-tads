@@ -1,21 +1,19 @@
 import csv
 
+_RAPORTY = []
+
 def wczytaj_zamowienia(sciezka):
-    """Wczytuje dane z pliku CSV."""
     with open(sciezka, mode='r', encoding='utf-8') as plik:
         reader = csv.DictReader(plik)
         return list(reader)
 
 def dostepne_regiony(sciezka):
-    """Zwraca posortowaną listę unikalnych regionów."""
     zamowienia = wczytaj_zamowienia(sciezka)
     regiony = {wiersz['region'] for wiersz in zamowienia if 'region' in wiersz}
     return sorted(list(regiony))
 
 def policz_wskazniki(sciezka, region=None):
-    """Oblicza wskaźniki dla danego regionu lub całości."""
     zamowienia = wczytaj_zamowienia(sciezka)
-    
     liczba_zamowien = 0
     przychod = 0.0
     koszt = 0.0
@@ -26,12 +24,10 @@ def policz_wskazniki(sciezka, region=None):
             przychod += float(wiersz.get('przychod', 0))
             koszt += float(wiersz.get('koszt', 0))
             
-    # Zabezpieczenie przed ZeroDivisionError
     if przychod == 0.0:
         marza = 0.0
     else:
-        marza = (przychod - koszt) / przychod
-        marza = round(marza, 4) # Zaokrąglenie dla zgodności z przykładem w konsoli
+        marza = round((przychod - koszt) / przychod, 4)
         
     return {
         'region': region,
@@ -40,3 +36,9 @@ def policz_wskazniki(sciezka, region=None):
         'koszt': koszt,
         'marza': marza
     }
+
+def zapisz_raport(rok, region):
+    _RAPORTY.append({"rok": rok, "region": region})
+
+def raporty_roku(rok):
+    return [r for r in _RAPORTY if r["rok"] == rok]
