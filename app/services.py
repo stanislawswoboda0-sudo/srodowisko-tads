@@ -1,4 +1,5 @@
 import csv
+import io
 
 _RAPORTY = []
 
@@ -51,3 +52,13 @@ def raporty_roku(rok):
 
 def wykaz_raportow():
     return list(_RAPORTY)
+
+def wczytaj_zbior(strumien):
+    tekst = strumien.read().decode("utf-8")
+    czytnik = csv.DictReader(io.StringIO(tekst))
+    naglowek = set(czytnik.fieldnames or ())
+    wymagane = {"data", "region", "przychod", "koszt"}
+    brakujace = sorted(wymagane - naglowek)
+    if brakujace:
+        raise ValueError(f"brak kolumn: {', '.join(brakujace)}")
+    return sum(1 for _ in czytnik)

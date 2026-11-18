@@ -1,5 +1,6 @@
 from datetime import date
 from flask import Blueprint, request, abort, current_app, redirect, url_for, render_template, flash
+from werkzeug.utils import secure_filename
 from .services import (
     policz_wskazniki,
     dostepne_regiony,
@@ -7,8 +8,9 @@ from .services import (
     raporty_roku,
     zestawienie_regionow,
     wykaz_raportow,
+    wczytaj_zbior,
 )
-from .forms import FiltrForm, RaportForm
+from .forms import FiltrForm, RaportForm, ZbiorForm
 
 panel_bp = Blueprint('panel', __name__)
 ROK_DOMYSLNY = 2026
@@ -80,6 +82,22 @@ def nowy_raport():
 
     status = 422 if formularz.errors else 200
     return render_template("new_report.html", formularz=formularz), status
+
+@panel_bp.route("/wczytaj", methods=["GET", "POST"])
+def wczytaj():
+    formularz = ZbiorForm()
+    if formularz.validate_on_submit():
+        plik = formularz.plik.data
+        nazwa = secure_filename(plik.filename)
+        try:
+            liczba = wczytaj_zbior(plik.stream)
+        except ValueError as blad:
+            formularz.plik.errors.append(f"Niepoprawna zawartość: {blad}")
+        else:
+            flash(f"Wczytano {liczba} zamówień z pliku {nazwa}", "success")
+            return redirect(url_for("panel.wczytaj"), 303)
+    status = 422 if formularz.errors else 200
+    return render_template("upload.html", formularz=formularz), status
 
 @panel_bp.get("/stary-panel")
 def stary_panel():
