@@ -1,3 +1,4 @@
+from datetime import date
 from flask import Blueprint, request, abort, current_app, redirect, url_for, render_template
 from .services import policz_wskazniki, dostepne_regiony, zapisz_raport, raporty_roku, zestawienie_regionow
 
@@ -25,7 +26,8 @@ def kpi():
     return render_template(
         "panel.html",
         wskazniki=w,
-        zestawienie=zestawienie_regionow(sciezka_csv)
+        zestawienie=zestawienie_regionow(sciezka_csv),
+        dzisiaj=date.today()
     )
 
 @panel_bp.get("/regiony/<region:kod>")
@@ -38,7 +40,8 @@ def region(kod):
     return render_template(
         "panel.html",
         wskazniki=w,
-        zestawienie=zestawienie_regionow(sciezka_csv)
+        zestawienie=zestawienie_regionow(sciezka_csv),
+        dzisiaj=date.today()
     )
 
-# ... pozostałe trasy (raport, nowy_raport, stary_panel) zostają na razie bez zmian ...
+# ... pozostałe trasy (raport, nowy_raport, stary_panel) zostają bez zmian ...
