@@ -3,9 +3,11 @@ import time
 from datetime import date
 from flask import Flask, g
 from flask_wtf import CSRFProtect
+from .commands import zarejestruj_polecenia
 from .config import KONFIGURACJE
 from .converters import RegionConverter
 from .errors import zarejestruj_obsluge_bledow
+from .extensions import db, migrate
 from .filters import zarejestruj_filtry
 from .services import dostepne_regiony
 
@@ -16,13 +18,17 @@ def create_app(nazwa_konfiguracji="rozwojowa"):
     app.config.from_object(KONFIGURACJE[nazwa_konfiguracji])
     app.logger.setLevel(logging.INFO)
 
+    db.init_app(app)
+    migrate.init_app(app, db, render_as_batch=True)
+    zarejestruj_polecenia(app)
+
     app.url_map.converters["region"] = RegionConverter
     zarejestruj_filtry(app)
 
     @app.context_processor
     def dane_wspolne():
         return {
-            "regiony": dostepne_regiony(app.config["SCIEZKA_DANYCH"]),
+            "regiony": dostepne_regiony(),
             "rok_biezacy": date.today().year,
         }
 

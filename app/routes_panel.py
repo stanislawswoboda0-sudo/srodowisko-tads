@@ -21,9 +21,8 @@ def index():
 
 @panel_bp.get("/kpi")
 def kpi():
-    sciezka = current_app.config["SCIEZKA_DANYCH"]
     formularz = FiltrForm(request.args)
-    regiony = dostepne_regiony(sciezka)
+    regiony = dostepne_regiony()
     formularz.region.choices = [("", "wszystkie")] + [(r, r) for r in regiony]
     
     region = rok = None
@@ -33,7 +32,7 @@ def kpi():
     else:
         flash("Kryteria zawężenia zostały pominięte", "warning")
         
-    w = policz_wskazniki(sciezka, region, rok)
+    w = policz_wskazniki(region, rok)
     if region is not None:
         current_app.logger.info("Obliczono wskaźniki dla regionu %s", w["region"])
         
@@ -41,21 +40,20 @@ def kpi():
         "panel.html",
         formularz=formularz,
         wskazniki=w,
-        zestawienie=zestawienie_regionow(sciezka),
+        zestawienie=zestawienie_regionow(),
         dzisiaj=date.today(),
     )
 
 @panel_bp.get("/regiony/<region:kod>")
 def region(kod):
-    sciezka_csv = current_app.config["SCIEZKA_DANYCH"]
-    regiony = dostepne_regiony(sciezka_csv)
+    regiony = dostepne_regiony()
     if kod not in regiony:
         abort(404, description=f"Nieznany region: {kod}")
-    w = policz_wskazniki(sciezka_csv, kod)
+    w = policz_wskazniki(kod)
     return render_template(
         "panel.html",
         wskazniki=w,
-        zestawienie=zestawienie_regionow(sciezka_csv),
+        zestawienie=zestawienie_regionow(),
         dzisiaj=date.today()
     )
 
@@ -66,10 +64,9 @@ def raport(rok):
 
 @panel_bp.route("/raporty/nowy", methods=["GET", "POST"])
 def nowy_raport():
-    sciezka = current_app.config["SCIEZKA_DANYCH"]
     istniejace = {(r["rok"], r["region"]) for r in wykaz_raportow()}
     formularz = RaportForm(istniejace=istniejace)
-    formularz.region.choices = [(r, r) for r in dostepne_regiony(sciezka)]
+    formularz.region.choices = [(r, r) for r in dostepne_regiony()]
 
     if formularz.validate_on_submit():
         zapisz_raport(
