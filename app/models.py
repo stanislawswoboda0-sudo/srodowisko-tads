@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from decimal import Decimal
-from sqlalchemy import ForeignKey, Numeric, String, UniqueConstraint, func
+from sqlalchemy import ForeignKey, Numeric, String, UniqueConstraint, false, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .extensions import db
 
@@ -13,6 +13,7 @@ class Raport(db.Model):
     region: Mapped[str] = mapped_column(String(2))
     utworzono: Mapped[datetime] = mapped_column(server_default=func.now())
     uwagi: Mapped[str | None] = mapped_column(default=None)
+    szczegoly: Mapped[bool] = mapped_column(server_default=false())
     zamowienia: Mapped[list["Zamowienie"]] = relationship(back_populates="raport")
 
     def __repr__(self):
